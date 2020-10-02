@@ -2,6 +2,138 @@
 
 var storageKey = "centro.sqlite"
 var db
+pdfMake.fonts = {
+    // download default Roboto font from cdnjs.com
+    Roboto: {
+      normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
+      bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
+      italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
+      bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+    },
+ }
+
+function pdf()
+{
+    var results = execSql("SELECT * FROM cursos")
+    var result = results[0].values.reduce( (accumulative, curso) => pushAndReturn(accumulative,processCursoPDF(curso[1])), []);
+    console.log(result)
+    pdfMake.createPdf({
+        content: [{
+			text: 'Listados por Grupo',
+			style: 'title'
+		}
+        ].concat(result), 
+        styles: {
+            title: {
+                fontSize: 36,
+                bold: true,
+                alignment: 'center',
+			    margin: [0, 190, 0, 80]
+            },
+            header: {
+                fontSize: 18,
+                bold: true,
+                alignment: 'center',
+            },
+            subheader: {
+                fontSize: 15,
+                margin: [0, 10, 0, 10],
+                bold: true,
+                alignment: 'center',
+            },
+            quote: {
+                italics: true
+            },
+            small: {
+                fontSize: 8
+            },
+            tableHeader: {
+                fillColor: '#eeeeee',
+            }
+	}}).open();
+}
+
+function pushAndReturn(arr, value)
+{
+    arr.push(value)
+    return arr
+}
+
+function concatAndReturn(arr, value)
+{
+    return arr.concat(value)
+}
+
+function processCursoPDF(curso)
+{
+    if(!curso) return;
+    var results = execSql(`SELECT * FROM grupos WHERE curso='${curso}'`)
+    var cursoData = results[0].values.reduce( (accumulative, grupo) => concatAndReturn(accumulative, processGrupoPDF(grupo[2])), [])
+    console.log(null,[{text: curso, pageBreak: 'before'},],  cursoData);
+    return concatAndReturn([],cursoData)
+}
+
+function processGrupoPDF(grupo)
+{
+    if(!grupo) return;
+    var columnName = "(alumnos.primer_apellido || ' ' || alumnos.segundo_apellido || ', ' || alumnos.nombre)"
+    var results = execSql(`SELECT nie, ${columnName}, fecha_nacimiento, usuario FROM alumnos WHERE grupo='${grupo}'`)
+    var tutor = execSql(`SELECT (profesores.primer_apellido || ' ' || profesores.segundo_apellido || ', ' || profesores.nombre) FROM profesores INNER JOIN grupos ON profesores.dni=grupos.tutor WHERE grupos.nombre='${grupo}'`)
+    console.log(tutor)
+    var tutorName = tutor[0]?.values[0] ? tutor[0].values[0] : "Sin nombre"
+    var arr =  [
+    {text: grupo, style: 'header', pageBreak: 'before'},
+    {text: "Tutor: " + tutorName    , style: 'subheader'},
+    
+    {
+        table: {
+            widths: [70, '*', 80, 120],
+            body: [ [
+                {text: "NIE", style: 'tableHeader', alignment: 'center'}, 
+                {text: "NOMBRE", style: 'tableHeader', alignment: 'center'},  
+                {text: "NACIMIENTO", style: 'tableHeader', alignment: 'center'},  
+                {text: "USUARIO", style: 'tableHeader', alignment: 'center'}
+             ] ] . concat(
+                results[0].values.reduce( (accumulative, alumno) => 
+                    pushAndReturn(accumulative, alumno)
+                , [])
+            ),
+        }
+    }]
+    console.log(arr)
+    return arr
+}
+
+function basic()
+{
+    return  {
+        content: [
+            'First paragraph',
+            {
+                style: 'tableExample',
+                table: {
+                    widths: [70, '*', 70, 120],
+                    body: [
+                        ['NIE', 'Nombre', 'Contraseña', 'Usuario'],
+                        ['3590335', 'Caballero Ramos, Juan Antonio', '16052008', 'hfuentesdelarosa01']
+                    ]
+                }
+            },
+            {text: 'Curso', pageBreak: 'before'},
+            {
+                style: 'tableExample',
+                table: {
+                    widths: [70, '*', 70, 120],
+                    body: [
+                        ['NIE', 'Nombre', 'Contraseña', 'Usuario'],
+                        ['3590335', 'Caballero Ramos, Juan Antonio', '16052008', 'hfuentesdelarosa01']
+                    ]
+                }
+            },
+        ]
+        
+    }
+}
 
 function removeDB()
 {
