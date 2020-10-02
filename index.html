@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+    <title>Rayuela XML</title>
+    <meta name="description" content="Home App">
+    <script src="./sql.js"></script>
+    <script src="./rayuela.js"></script>
+    <script src="./xml2json.js"></script>
+  </head>
+
+  <body>
+    <h1>Rayuela (Profesores, Alumnos, Cursos y Grupos)</h1>
+    <h2>Los datos se quedan en tu navegador, no se suben ni guardan en ningún sitio de internet</h2>
+    <h3>Cuando cargas los ficheros XML se procesan para generar una tablas SQL, esta base de datos se guarda en tu navegador, es descargable como fichero .sqlite y puedes eliminarla del navegador cuando desees</h3>
+
+    <button onclick="showTables()">Mostrar Tablas</button>
+    <button onclick="removeDB()">Eliminar Base de Datos</button>
+    <button onclick="exportDB()">Descargar Archivo SQLite</button>
+    <button onclick="showTutores()">Tutores</button>
+
+    <br><br>
+
+    <div id="tables">
+    </div>
+
+    <textarea id="commands" rows="10" cols="100"></textarea>
+    <br><br>
+    <button onclick="runCommands()">Ejecutar SQLs sobre la base de datos</button>
+    <br><br>
+    <label class="button">Carga aquí los archivo de rayuela.educarex.es: <input onchange="importXML()" type="file" id="xmlfile" multiple></label>
+
+    <pre id="output"></pre>
+  </body>
+</html>
