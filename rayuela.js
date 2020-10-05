@@ -16,13 +16,9 @@ function pdf()
 {
     var results = execSql("SELECT * FROM cursos")
     var result = results[0].values.reduce( (accumulative, curso) => pushAndReturn(accumulative,processCursoPDF(curso[1])), []);
-    console.log(result)
+    var title = [{ text: 'Listados por Grupo', style: 'title' }]
     pdfMake.createPdf({
-        content: [{
-			text: 'Listados por Grupo',
-			style: 'title'
-		}
-        ].concat(result), 
+        content: title.concat(result), 
         styles: {
             title: {
                 fontSize: 36,
@@ -53,23 +49,13 @@ function pdf()
 	}}).open();
 }
 
-function pushAndReturn(arr, value)
-{
-    arr.push(value)
-    return arr
-}
 
-function concatAndReturn(arr, value)
-{
-    return arr.concat(value)
-}
 
 function processCursoPDF(curso)
 {
     if(!curso) return;
     var results = execSql(`SELECT * FROM grupos WHERE curso='${curso}'`)
     var cursoData = results[0].values.reduce( (accumulative, grupo) => concatAndReturn(accumulative, processGrupoPDF(grupo[2])), [])
-    console.log(null,[{text: curso, pageBreak: 'before'},],  cursoData);
     return concatAndReturn([],cursoData)
 }
 
@@ -79,7 +65,6 @@ function processGrupoPDF(grupo)
     var columnName = "(alumnos.primer_apellido || ' ' || alumnos.segundo_apellido || ', ' || alumnos.nombre)"
     var results = execSql(`SELECT nie, ${columnName}, fecha_nacimiento, usuario FROM alumnos WHERE grupo='${grupo}'`)
     var tutor = execSql(`SELECT (profesores.primer_apellido || ' ' || profesores.segundo_apellido || ', ' || profesores.nombre) FROM profesores INNER JOIN grupos ON profesores.dni=grupos.tutor WHERE grupos.nombre='${grupo}'`)
-    console.log(tutor)
     var tutorName = tutor[0]?.values[0] ? tutor[0].values[0] : "Sin nombre"
     var arr =  [
     {text: grupo, style: 'header', pageBreak: 'before'},
@@ -100,39 +85,7 @@ function processGrupoPDF(grupo)
             ),
         }
     }]
-    console.log(arr)
     return arr
-}
-
-function basic()
-{
-    return  {
-        content: [
-            'First paragraph',
-            {
-                style: 'tableExample',
-                table: {
-                    widths: [70, '*', 70, 120],
-                    body: [
-                        ['NIE', 'Nombre', 'Contraseña', 'Usuario'],
-                        ['3590335', 'Caballero Ramos, Juan Antonio', '16052008', 'hfuentesdelarosa01']
-                    ]
-                }
-            },
-            {text: 'Curso', pageBreak: 'before'},
-            {
-                style: 'tableExample',
-                table: {
-                    widths: [70, '*', 70, 120],
-                    body: [
-                        ['NIE', 'Nombre', 'Contraseña', 'Usuario'],
-                        ['3590335', 'Caballero Ramos, Juan Antonio', '16052008', 'hfuentesdelarosa01']
-                    ]
-                }
-            },
-        ]
-        
-    }
 }
 
 function removeDB()
@@ -211,8 +164,15 @@ function readXML(file)
 function showTutores()
 {
     var commands = document.getElementById('commands')
-    commands.value = `SELECT grupos.nombre, profesores.usuario FROM grupos INNER JOIN profesores ON grupos.tutor = profesores.dni \n`
+    var sql = 
+      `-- Descomenta la siguiente línea si quieres saber de qué grupo es tutor cada profesor`
+    + `\n-- SELECT grupos.nombre, profesores.usuario FROM grupos INNER JOIN profesores ON grupos.tutor = profesores.dni;`
+    + `\nSELECT profesores.usuario FROM grupos INNER JOIN profesores ON grupos.tutor = profesores.dni;`
+    ;
+    commands.value = `${sql} \n`
     runCommands()
+    var results = execSql(sql)
+    exportAsFile("tutores.txt", results[0].values.reduce( (acc, item) => acc + "\n" + item ), "")
 }
 
 function showTables()
@@ -255,6 +215,22 @@ function showVersion()
     runCommands()
 }
 
+function exportAsFile(filename, content)
+{
+    // In localStorage save as binaryString, convert to Binary Array
+    var arraybuff = toBinArray(content);
+    var blob = new Blob([arraybuff]);
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.href = window.URL.createObjectURL(blob);
+    a.download = filename;
+    a.onclick = function () {
+        setTimeout(function () {
+            window.URL.revokeObjectURL(a.href);
+        }, 1500);
+    };
+    a.click();
+}
 
 var tableCreate = function () {
 	function valconcat(vals, tagName) {
@@ -453,4 +429,15 @@ function execSql(sql, bindings)
     window.localStorage.setItem(storageKey, dbstr);
     // Devolvemos resultado de la consulta
     return contents
+}
+
+function pushAndReturn(arr, value)
+{
+    arr.push(value)
+    return arr
+}
+
+function concatAndReturn(arr, value)
+{
+    return arr.concat(value)
 }

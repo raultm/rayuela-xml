@@ -18,22 +18,26 @@
     <h2>Los datos se quedan en tu navegador, no se suben ni guardan en ningún sitio de internet</h2>
     <h3>Cuando cargas los ficheros XML se procesan para generar una tablas SQL, esta base de datos se guarda en tu navegador, es descargable como fichero .sqlite y puedes eliminarla del navegador cuando desees</h3>
 
+    <label class="button">Carga aquí los archivo de rayuela.educarex.es: <input onchange="importXML()" type="file" id="xmlfile" multiple></label>
+    <br>
+    <h4>Tareas habituales</h4>
+    <button onclick="showTutores()">Listado Tutores (SQL | TXT)</button>
+    <button onclick="pdf()">Listados por Grupos (PDF)</button>
+    <h4>Base de Datos</h4>
     <button onclick="showTables()">Mostrar Tablas</button>
     <button onclick="removeDB()">Eliminar Base de Datos</button>
     <button onclick="exportDB()">Descargar Archivo SQLite</button>
-    <button onclick="showTutores()">Tutores</button>
-    <button onclick="pdf()">Listados por Grupos (PDF)</button>
 
     <br><br>
 
     <div id="tables">
     </div>
 
-    <textarea id="commands" rows="10" cols="100"></textarea>
+    <textarea id="commands" rows="10" cols="150"></textarea>
     <br><br>
     <button onclick="runCommands()">Ejecutar SQLs sobre la base de datos</button>
     <br><br>
-    <label class="button">Carga aquí los archivo de rayuela.educarex.es: <input onchange="importXML()" type="file" id="xmlfile" multiple></label>
+    
 
     <pre id="output"></pre>
   </body>
