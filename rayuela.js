@@ -184,6 +184,27 @@ function cacheoCredenciales()
     var results = execSql(sql)
     console.log(results[0].values)
     exportAsFile("tabla_asignacion", results[0].values.reduce( (acc, item) => acc + item.join(":") + "\n", "")); 
+    
+    exportAsFile("cachear_credenciales.sh", 
+`#!/bin/bash
+# Cachea todos los usuarios en el fichero tabla_asignacion
+# v3 por Victor Martinez.
+# Cambiamos de nss a sssd
+# v2 por Victor Martinez. IES San José, Badajoz.
+# Basado en v1 del IES Zurbaran. Badajoz. Fernando Sosa
+
+for line in \`cat tabla_asignacion\`;do
+    LOGIN=\`echo "$line" | cut -d':' -f2\`
+    CLAVE=\`echo "$line" | cut -d':' -f3\`
+
+    if [ ! -z "$LOGIN" ] && [ ! -z "$CLAVE" ]; then
+        echo "$CLAVE" > /tmp/sss_pass
+        sss_seed -n $LOGIN -D LDAP  -p /tmp/sss_pass
+        echo "Cacheada credencial para $LOGIN:$CLAVE" >> /root/iniciocurso.log
+    fi
+done
+
+####################################################################`); 
 }
 
 function showTables()

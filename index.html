@@ -19,11 +19,12 @@
     <h3>Cuando cargas los ficheros XML se procesan para generar una tablas SQL, esta base de datos se guarda en tu navegador, es descargable como fichero .sqlite y puedes eliminarla del navegador cuando desees</h3>
 
     <label class="button">Carga aquí los archivo de rayuela.educarex.es: <input onchange="importXML()" type="file" id="xmlfile" multiple></label>
+    <br>Cada vez que subes un fichero, antes de meter los datos elimina de la <b>tabla concreta</b> los valores anteriores
     <br>
     <h4>Tareas habituales</h4>
     <button onclick="showTutores()">Listado Tutores (SQL | TXT)</button>
     <button onclick="pdf()">Listados por Grupos (PDF)</button>
-    <button onclick="cacheoCredenciales()">Cachear Credenciales (TXT)</button>
+    <button onclick="cacheoCredenciales()">Cachear Credenciales (TXT + SH)</button>
     <h4>Base de Datos</h4>
     <button onclick="showTables()">Mostrar Tablas</button>
     <button onclick="removeDB()">Eliminar Base de Datos</button>
