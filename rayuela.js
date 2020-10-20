@@ -77,7 +77,7 @@ function processGrupoPDF(grupo)
                 {text: "NIE", style: 'tableHeader', alignment: 'center'}, 
                 {text: "NOMBRE", style: 'tableHeader', alignment: 'center'},  
                 {text: "NACIMIENTO", style: 'tableHeader', alignment: 'center'},  
-                {text: "USUARIO", style: 'tableHeader', alignment: 'center'}
+                {text: "RAYUELA", style: 'tableHeader', alignment: 'center'}
              ] ] . concat(
                 results[0].values.reduce( (accumulative, alumno) => 
                     pushAndReturn(accumulative, alumno)
@@ -175,6 +175,17 @@ function showTutores()
     exportAsFile("tutores.txt", results[0].values.reduce( (acc, item) => acc + "\n" + item ), "")
 }
 
+function cacheoCredenciales()
+{
+    var commands = document.getElementById('commands')
+    var sql = `SELECT alumnos.usuario,alumnos.usuario,REPLACE(alumnos.fecha_nacimiento,'/',''), grupos.nombre FROM alumnos INNER JOIN grupos ON grupos.nombre = alumnos.grupo;`;
+    commands.value = `${sql} \n`
+    runCommands()
+    var results = execSql(sql)
+    console.log(results[0].values)
+    exportAsFile("tabla_asignacion", results[0].values.reduce( (acc, item) => acc + item.join(":") + "\n", "")); 
+}
+
 function showTables()
 {
     var results = execSql("SELECT `name`, `sql`\n  FROM `sqlite_master`\n  WHERE type='table';")
@@ -218,8 +229,10 @@ function showVersion()
 function exportAsFile(filename, content)
 {
     // In localStorage save as binaryString, convert to Binary Array
-    var arraybuff = toBinArray(content);
-    var blob = new Blob([arraybuff]);
+    //var arraybuff = toBinArray(content);
+    //var blob = new Blob(["\ufeff",arraybuff], { type: "text/plain;charset=utf-8;" });
+    var blob = new Blob([content], { type: "text/plain;charset=utf-8;" });
+    //console.log(content, arraybuff, blob);
     var a = document.createElement("a");
     document.body.appendChild(a);
     a.href = window.URL.createObjectURL(blob);
