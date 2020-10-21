@@ -55,7 +55,10 @@ function processCursoPDF(curso)
 {
     if(!curso) return;
     var results = execSql(`SELECT * FROM grupos WHERE curso='${curso}'`)
-    var cursoData = results[0].values.reduce( (accumulative, grupo) => concatAndReturn(accumulative, processGrupoPDF(grupo[2])), [])
+    var cursoData = results[0].values.reduce( 
+        (accumulative, grupo) => concatAndReturn(accumulative, processGrupoPDF(grupo[2])),
+        []
+    )
     return concatAndReturn([],cursoData)
 }
 
@@ -64,6 +67,9 @@ function processGrupoPDF(grupo)
     if(!grupo) return;
     var columnName = "(alumnos.primer_apellido || ' ' || alumnos.segundo_apellido || ', ' || alumnos.nombre)"
     var results = execSql(`SELECT nie, ${columnName}, fecha_nacimiento, usuario FROM alumnos WHERE grupo='${grupo}'`)
+    if(Array.isArray(results) && results.length == 0){
+        return []
+    }
     var tutor = execSql(`SELECT (profesores.primer_apellido || ' ' || profesores.segundo_apellido || ', ' || profesores.nombre) FROM profesores INNER JOIN grupos ON profesores.dni=grupos.tutor WHERE grupos.nombre='${grupo}'`)
     var tutorName = tutor[0]?.values[0] ? tutor[0].values[0] : "Sin nombre"
     var arr =  [
